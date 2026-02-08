@@ -1,10 +1,3 @@
-export interface PreviewComment {
-  id: string;
-  author: string;
-  text: string;
-  timeAgo: string;
-}
-
 export interface Comment {
   id: string;
   author: string;
@@ -23,7 +16,5 @@ export interface ConversationProps {
 export interface PreConversationProps {
   postId: string;
   articleTitle?: string;
-  commentCount?: number;
-  previewComments?: PreviewComment[];
   onTap?: () => void;
 }

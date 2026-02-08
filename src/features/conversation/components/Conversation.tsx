@@ -22,7 +22,7 @@ export const Conversation = ({
   const {isAuthenticated, isAuthenticating, authenticate, checkAuthStatus} =
     useAuth();
   const {comments, isLoading, loadComments, addComment, likeComment} =
-    useConversation();
+    useConversation(postId);
   const [newComment, setNewComment] = useState('');
 
   useEffect(() => {

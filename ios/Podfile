@@ -5,7 +5,12 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+# OpenWeb SDK requires iOS 15.0+
+platform :ios, '15.0'
+
+# Toggle New Architecture: '0' = Old (Bridge), '1' = New (Fabric + TurboModules)
+ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -16,6 +21,10 @@ end
 
 target 'OpenWebRnSample074' do
   config = use_native_modules!
+
+  # OpenWeb SDK for conversation feature
+  # Reference: https://developers.openweb.com/docs/ios-getting-started
+  pod 'OpenWebSDK'
 
   use_react_native!(
     :path => config[:reactNativePath],

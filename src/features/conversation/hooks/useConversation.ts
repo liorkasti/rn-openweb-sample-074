@@ -1,66 +1,41 @@
 import {useState, useCallback} from 'react';
 import {Comment} from '../types';
+import {OpenWebConversation} from '../services/OpenWebConversation';
 
-export const useConversation = () => {
+export const useConversation = (postId: string) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const loadComments = useCallback(async () => {
+    if (!postId) {
+      console.log('[useConversation] No postId provided');
+      return;
+    }
+
     try {
       setIsLoading(true);
-
-      // Simulate loading comments
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      const mockComments: Comment[] = [
-        {
-          id: '1',
-          author: 'John Doe',
-          text: 'Great article! Really helpful information about React Native 0.74.3.',
-          timestamp: new Date(Date.now() - 3600000),
-          likes: 12,
-        },
-        {
-          id: '2',
-          author: 'Jane Smith',
-          text: 'Thanks for sharing this. The new architecture improvements are impressive.',
-          timestamp: new Date(Date.now() - 7200000),
-          likes: 8,
-        },
-        {
-          id: '3',
-          author: 'Mike Johnson',
-          text: 'Has anyone tried this with Expo? Would love to hear experiences.',
-          timestamp: new Date(Date.now() - 10800000),
-          likes: 5,
-        },
-      ];
-
-      setComments(mockComments);
+      const data = await OpenWebConversation.loadComments(postId);
+      setComments(data.comments);
     } catch (error) {
       console.error('[useConversation] Error loading comments:', error);
       throw error;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [postId]);
 
   const addComment = useCallback(
-    (text: string, author: string = 'You') => {
-      const newComment: Comment = {
-        id: Date.now().toString(),
-        author,
-        text,
-        timestamp: new Date(),
-        likes: 0,
-      };
+    async (text: string) => {
+      if (!postId) return;
 
+      const newComment = await OpenWebConversation.postComment(postId, text);
       setComments(prev => [newComment, ...prev]);
     },
-    [],
+    [postId],
   );
 
-  const likeComment = useCallback((commentId: string) => {
+  const likeComment = useCallback(async (commentId: string) => {
+    await OpenWebConversation.likeComment(commentId);
     setComments(prev =>
       prev.map(c => (c.id === commentId ? {...c, likes: c.likes + 1} : c)),
     );

@@ -7,6 +7,12 @@ PODS:
   - hermes-engine (0.74.3):
     - hermes-engine/Pre-built (= 0.74.3)
   - hermes-engine/Pre-built (0.74.3)
+  - OpenWebCommon (1.1.0)
+  - OpenWebRNSdk (0.1.0):
+    - OpenWebSDK (= 2.11.2)
+    - React-Core
+  - OpenWebSDK (2.11.2):
+    - OpenWebCommon (~> 1.1.0)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1174,6 +1180,8 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - OpenWebRNSdk (from `../node_modules/react-native-openweb-sdk`)
+  - OpenWebSDK
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -1227,6 +1235,8 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - OpenWebCommon
+    - OpenWebSDK
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1243,6 +1253,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-06-28-RNv0.74.3-7bda0c267e76d11b68a585f84cfdd65000babf85
+  OpenWebRNSdk:
+    :path: "../node_modules/react-native-openweb-sdk"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -1347,6 +1359,9 @@ SPEC CHECKSUMS:
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: fdfdfe5479092de0c4bdbebedd9056951f092c4f
   hermes-engine: 1f547997900dd0752dc0cc0ae6dd16173c49e09b
+  OpenWebCommon: 8df2731b37238173eae8223923e7e6acc4a884a0
+  OpenWebRNSdk: 832b309c00d50bdccd1bada7a2e83357c8897bd7
+  OpenWebSDK: c375ead6ef9fbc39cb922e19d24369244b33033d
   RCT-Folly: 5dc73daec3476616d19e8a53f0156176f7b55461
   RCTDeprecation: 4c7eeb42be0b2e95195563c49be08d0b839d22b4
   RCTRequired: d530a0f489699c8500e944fde963102c42dcd0c2
@@ -1397,6 +1412,6 @@ SPEC CHECKSUMS:
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 04f1db30bb810187397fa4c37dd1868a27af229c
 
-PODFILE CHECKSUM: e29a9399e30bdfa576b819dbdc6a5a67724d5be2
+PODFILE CHECKSUM: 320bb78cb1f3f2201bf358760166ef4376d61fb8
 
 COCOAPODS: 1.16.2

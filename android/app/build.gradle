@@ -69,6 +69,10 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
+def isNewArchitectureEnabled() {
+    return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -102,11 +106,25 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    sourceSets {
+        main {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += ["src/newarch/java"]
+            } else {
+                java.srcDirs += ["src/oldarch/java"]
+            }
+        }
+    }
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+
+    // OpenWeb SDK for conversation
+    // Reference: https://developers.openweb.com/docs/android-getting-started
+    implementation 'io.github.spotim:spotim-sdk:+'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

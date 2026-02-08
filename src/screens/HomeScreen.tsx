@@ -12,36 +12,26 @@ import {
   TextInput,
 } from 'react-native';
 import {APP_METADATA, getArchitectureInfo} from '../config/metadata';
-import {PreConversation} from '../features/conversation/components/PreConversation';
-import {Conversation} from '../features/conversation/components/Conversation';
-import {PreviewComment} from '../features/conversation/types';
+// Real SDK components
+import {
+  OpenWeb,
+  OpenWebConversation,
+  OpenWebPreConversation,
+} from 'react-native-openweb-sdk';
 
 export const HomeScreen = (): React.JSX.Element => {
   const isDarkMode = useColorScheme() === 'dark';
   const [isConversationVisible, setIsConversationVisible] = useState(false);
-  const [spotId, setSpotId] = useState('sp_demo123');
-  const [postId, setPostId] = useState('article-123');
+  // SDK data comes from these inputs
+  const [spotId, setSpotId] = useState('sp_eCIlROSD');
+  const [postId, setPostId] = useState('sdk1');
 
-  const previewComments: PreviewComment[] = [
-    {
-      id: '1',
-      author: 'John Doe',
-      text: 'Great article! Really helpful information about React Native 0.74.3.',
-      timeAgo: '2h ago',
-    },
-    {
-      id: '2',
-      author: 'Jane Smith',
-      text: 'Thanks for sharing this. The new architecture improvements are impressive.',
-      timeAgo: '4h ago',
-    },
-    {
-      id: '3',
-      author: 'Mike Johnson',
-      text: 'Has anyone tried this with Expo? Would love to hear experiences.',
-      timeAgo: '6h ago',
-    },
-  ];
+  // Initialize SDK with spotId
+  React.useEffect(() => {
+    if (spotId) {
+      OpenWeb.manager.setSpotId(spotId);
+    }
+  }, [spotId]);
 
   const handlePreConversationTap = () => {
     setIsConversationVisible(true);
@@ -87,12 +77,10 @@ export const HomeScreen = (): React.JSX.Element => {
           />
         </View>
 
-        <PreConversation
+        <OpenWebPreConversation
           postId={postId}
-          articleTitle="React Native 0.74.3 with OpenWeb SDK Integration"
-          commentCount={42}
-          previewComments={previewComments}
-          onTap={handlePreConversationTap}
+          style={styles.preConversation}
+          onOpenConversationFlow={() => handlePreConversationTap()}
         />
 
         <View style={styles.metadata}>
@@ -115,11 +103,10 @@ export const HomeScreen = (): React.JSX.Element => {
         animationType="slide"
         presentationStyle="pageSheet"
         onRequestClose={handleCloseConversation}>
-        <Conversation
+        <OpenWebConversation
           postId={postId}
-          articleTitle="React Native 0.74.3 with OpenWeb SDK Integration"
-          articleUrl="https://example.com/article"
-          onClose={handleCloseConversation}
+          style={{flex: 1}}
+          onConversationDismissed={handleCloseConversation}
         />
       </Modal>
     </SafeAreaView>
@@ -205,5 +192,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     backgroundColor: '#fff',
     color: '#333',
+  },
+  preConversation: {
+    margin: 16,
+    minHeight: 200,
   },
 });

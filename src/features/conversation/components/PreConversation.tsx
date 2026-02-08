@@ -1,21 +1,34 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import {PreConversationProps, PreviewComment} from '../types';
+import React, {useEffect, useState} from 'react';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {PreConversationProps} from '../types';
+import {OpenWebConversation} from '../services/OpenWebConversation';
 
 export const PreConversation = ({
   postId,
   articleTitle = 'Sample Article',
-  commentCount = 0,
-  previewComments = [],
   onTap,
 }: PreConversationProps): React.JSX.Element => {
-  const displayComments = previewComments.slice(0, 3);
+  const [commentCount, setCommentCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!postId) return;
+
+      setIsLoading(true);
+      try {
+        const data = await OpenWebConversation.getPreConversationData(postId);
+        setCommentCount(data.commentCount);
+      } catch (error) {
+        console.error('[PreConversation] Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [postId]);
+
   return (
     <TouchableOpacity
       style={styles.container}
@@ -39,23 +52,6 @@ export const PreConversation = ({
             <Text style={styles.statLabel}>Reactions</Text>
           </View>
         </View>
-
-        {displayComments.length > 0 && (
-          <View style={styles.previewSection}>
-            <Text style={styles.previewTitle}>Recent Comments</Text>
-            {displayComments.map(comment => (
-              <View key={comment.id} style={styles.previewComment}>
-                <View style={styles.commentHeader}>
-                  <Text style={styles.commentAuthor}>{comment.author}</Text>
-                  <Text style={styles.commentTime}>{comment.timeAgo}</Text>
-                </View>
-                <Text style={styles.commentText} numberOfLines={2}>
-                  {comment.text}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
       </View>
 
       <View style={styles.footer}>
@@ -153,44 +149,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#FFFFFF',
     fontWeight: '600',
-  },
-  previewSection: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-  },
-  previewTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  previewComment: {
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  commentAuthor: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
-  },
-  commentTime: {
-    fontSize: 11,
-    color: '#999',
-  },
-  commentText: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: '#666',
   },
 });
