@@ -9,7 +9,7 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, '15.0'
 
 # Toggle New Architecture: '0' = Old (Bridge), '1' = New (Fabric + TurboModules)
-ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
 prepare_react_native_project!
 

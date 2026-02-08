@@ -10,7 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import {ConversationProps} from '../types';
-import {useAuth} from '../../auth/hooks/useAuth';
+import {useAuth} from '../../../context/AuthContext';
+import {AuthStatus} from '../../auth/types';
 import {useConversation} from '../hooks/useConversation';
 
 export const Conversation = ({
@@ -19,8 +20,13 @@ export const Conversation = ({
   articleUrl,
   onClose,
 }: ConversationProps): React.JSX.Element => {
-  const {isAuthenticated, isAuthenticating, authenticate, checkAuthStatus} =
-    useAuth();
+  const {
+    status,
+    isLoading: isAuthenticating,
+    authenticate,
+    refreshStatus,
+  } = useAuth();
+  const isAuthenticated = status === AuthStatus.Authenticated;
   const {comments, isLoading, loadComments, addComment, likeComment} =
     useConversation(postId);
   const [newComment, setNewComment] = useState('');
@@ -31,7 +37,7 @@ export const Conversation = ({
 
   const initializeConversation = async () => {
     try {
-      await checkAuthStatus();
+      await refreshStatus();
       await loadComments();
     } catch (error) {
       console.error('[Conversation] Initialization error:', error);

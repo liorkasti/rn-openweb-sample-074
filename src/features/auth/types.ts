@@ -1,15 +1,17 @@
-export interface SSOStartResponse {
-  codeA: string;
+export enum AuthStatus {
+  Unknown = 'unknown',
+  Guest = 'guest',
+  Authenticated = 'authenticated',
 }
 
-export interface UserLoginStatus {
-  isGuest: boolean;
+export interface AuthState {
+  status: AuthStatus;
   userId?: string;
+  isLoading: boolean;
+  error?: string;
 }
 
-export interface OpenWebAuthService {
-  startSSO: () => Promise<SSOStartResponse>;
-  completeSSO: (codeB: string) => Promise<void>;
-  getUserLoginStatus: () => Promise<UserLoginStatus>;
-  logout: () => Promise<void>;
-}
+export const INITIAL_AUTH_STATE: AuthState = {
+  status: AuthStatus.Unknown,
+  isLoading: false,
+};
