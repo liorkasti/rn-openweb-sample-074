@@ -122,9 +122,8 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    // OpenWeb SDK for conversation
-    // Reference: https://developers.openweb.com/docs/android-getting-started
-    implementation 'io.github.spotim:spotim-sdk:+'
+    // OpenWeb SDK is provided by react-native-openweb-sdk
+    // Do not add direct dependency to avoid duplicate classes
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

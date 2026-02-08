@@ -17,8 +17,7 @@ class MainApplication : Application(), ReactApplication {
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
-              // OpenWeb SDK native module
-              add(OpenWebPackage())
+              // OpenWeb SDK is auto-linked via react-native-openweb-sdk
             }
 
         override fun getJSMainModuleName(): String = "index"
