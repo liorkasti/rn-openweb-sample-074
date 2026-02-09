@@ -1,539 +1,186 @@
-import React, { useCallback, useState } from 'react';
+import React, {useState} from 'react';
 import {
-  ActivityIndicator,
-  Platform,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
+  Platform,
+  TextInput,
 } from 'react-native';
-import { OpenWeb } from 'react-native-openweb-sdk';
-import { AuthModal } from '../components/AuthModal';
-import { SettingsPanel } from '../components/SettingsPanel';
-import { DEFAULT_POST_ID, DEFAULT_SPOT_ID } from '../config/constants';
-import { useAuth } from '../context/AuthContext';
-import { AuthStatus } from '../features/auth/types';
-import type { HomeScreenProps } from '../navigation/types';
-import { Colors } from '../theme/colors';
+import {OpenWeb} from 'react-native-openweb-sdk';
+import {AuthModal} from '../components/AuthModal';
+import {DEFAULT_POST_ID, DEFAULT_SPOT_ID} from '../config/constants';
+import {useAuth} from '../features/auth/AuthContext';
+import {AuthStatus} from '../features/auth/types';
+import type {HomeScreenProps} from '../navigation/types';
+import {Colors} from '../theme/colors';
+
+const getArchitecture = (): string => {
+  const isTurboModuleEnabled = (global as any).__turboModuleProxy != null;
+  if (Platform.OS === 'ios') {
+    return isTurboModuleEnabled ? 'New (Fabric/TurboModules)' : 'Old (Paper)';
+  } else if (Platform.OS === 'android') {
+    return isTurboModuleEnabled ? 'New (Fabric/TurboModules)' : 'Old (Bridge)';
+  }
+  return 'Unknown';
+};
 
 export const HomeScreen = ({
   navigation,
-  route,
 }: HomeScreenProps): React.JSX.Element => {
   const [spotId, setSpotId] = useState(DEFAULT_SPOT_ID);
   const [postId, setPostId] = useState(DEFAULT_POST_ID);
-  const [settingsVisible, setSettingsVisible] = useState(false);
-
-  // Open settings when triggered from stack navigator header button
-  React.useEffect(() => {
-    if (route.params?._openSettings) {
-      setSettingsVisible(true);
-    }
-  }, [route.params?._openSettings]);
-
   const [sdkReady, setSdkReady] = useState(false);
-  const [initError, setInitError] = useState<string | undefined>();
+  const architecture = getArchitecture();
 
-  const {status, userId, isLoading, setShowAuthModal, logout} = useAuth();
+  const {status, userId, setShowAuthModal, logout} = useAuth();
   const isAuthenticated = status === AuthStatus.Authenticated;
 
-  // Initialize SDK with spotId
   React.useEffect(() => {
-    if (spotId) {
-      setSdkReady(false);
-      setInitError(undefined);
-      try {
-        OpenWeb.manager.setSpotId(spotId);
-        setSdkReady(true);
-      } catch (e: any) {
-        setInitError(e?.message || 'Failed to initialize SDK');
-      }
+    try {
+      OpenWeb.manager.setSpotId(spotId);
+      setSdkReady(true);
+    } catch (e: any) {
+      console.error('SDK init failed:', e?.message);
     }
   }, [spotId]);
 
-  const handleNavigateToPreConversation = useCallback(() => {
-    if (!sdkReady || !postId) {
-      return;
-    }
-    navigation.navigate('PreConversation', {spotId, postId});
-  }, [navigation, sdkReady, spotId, postId]);
-
-  const handleNavigateToConversation = useCallback(() => {
-    if (!sdkReady || !postId) {
-      return;
-    }
-    navigation.navigate('Conversation', {postId});
-  }, [navigation, sdkReady, postId]);
-
-  const handleAuthPress = useCallback(() => {
-    if (isAuthenticated) {
-      logout();
-    } else {
-      setShowAuthModal(true);
-    }
-  }, [isAuthenticated, logout, setShowAuthModal]);
-
-  const getInitial = (): string => {
-    if (userId) {
-      return userId.charAt(0).toUpperCase();
-    }
-    return '?';
-  };
-
-  const canNavigate = sdkReady && !!postId;
-
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Status */}
+        <View style={styles.card}>
+          <Text style={styles.label}>Architecture</Text>
+          <Text style={styles.value}>{architecture}</Text>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentInsetAdjustmentBehavior="automatic"
-        showsVerticalScrollIndicator={false}>
-        {/* Hero Banner */}
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Welcome</Text>
-          <Text style={styles.heroSubtitle}>
-            OpenWeb SDK Sample{' \u00B7 '}React Native 0.74.3
+          <Text style={styles.label}>Spot ID</Text>
+          <TextInput
+            style={styles.input}
+            value={spotId}
+            onChangeText={setSpotId}
+            placeholder="Enter Spot ID"
+            placeholderTextColor={Colors.textMuted}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <Text style={styles.label}>Post ID</Text>
+          <TextInput
+            style={styles.input}
+            value={postId}
+            onChangeText={setPostId}
+            placeholder="Enter Post ID"
+            placeholderTextColor={Colors.textMuted}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <Text style={styles.label}>SDK</Text>
+          <Text
+            style={[
+              styles.value,
+              {color: sdkReady ? Colors.success : Colors.warning},
+            ]}>
+            {sdkReady ? 'Ready' : 'Not Ready'}
           </Text>
         </View>
 
-        {/* Section: Configuration */}
-        <Text style={styles.sectionTitle}>Configuration</Text>
-
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View
-              style={[
-                styles.statusBadge,
-                sdkReady ? styles.badgeReady : styles.badgePending,
-              ]}>
-              <View
-                style={[
-                  styles.statusDot,
-                  sdkReady ? styles.dotReady : styles.dotPending,
-                ]}
-              />
-              <Text
-                style={[
-                  styles.badgeText,
-                  sdkReady ? styles.badgeTextReady : styles.badgeTextPending,
-                ]}>
-                {sdkReady ? 'Ready' : 'Not Ready'}
-              </Text>
-            </View>
-          </View>
-
-          {initError && (
-            <View style={styles.errorBanner}>
-              <Text style={styles.errorText}>{initError}</Text>
-            </View>
-          )}
-
-          <View style={styles.configRow}>
-            <Text style={styles.configLabel}>Spot ID</Text>
-            <Text style={styles.configValue} numberOfLines={1}>
-              {spotId}
-            </Text>
-          </View>
-          <View style={[styles.configRow, styles.configRowLast]}>
-            <Text style={styles.configLabel}>Post ID</Text>
-            <Text style={styles.configValue}>{postId}</Text>
-          </View>
-        </View>
-
-        {/* Section: Authentication */}
-        <Text style={styles.sectionTitle}>Authentication</Text>
-
+        {/* Auth */}
         <TouchableOpacity
           style={styles.card}
-          onPress={handleAuthPress}
-          disabled={isLoading}
-          activeOpacity={0.7}>
-          <View style={styles.authRow}>
-            <View style={styles.authLeft}>
-              <View
-                style={[
-                  styles.authAvatar,
-                  isAuthenticated
-                    ? styles.authAvatarActive
-                    : styles.authAvatarGuest,
-                ]}>
-                {isLoading ? (
-                  <ActivityIndicator size="small" color={Colors.white} />
-                ) : isAuthenticated ? (
-                  <Text style={styles.authAvatarText}>{getInitial()}</Text>
-                ) : (
-                  <Text style={styles.authAvatarIcon}>&#128100;</Text>
-                )}
-              </View>
-              <View style={styles.authInfo}>
-                <Text style={styles.authName}>
-                  {isAuthenticated ? userId || 'User' : 'Guest'}
-                </Text>
-                <Text style={styles.authStatus}>
-                  {isAuthenticated ? 'Tap to logout' : 'Tap to sign in'}
-                </Text>
-              </View>
-            </View>
-            <View
-              style={[
-                styles.authChevron,
-                isAuthenticated && styles.authChevronActive,
-              ]}>
-              <Text style={styles.authChevronText}>
-                {isAuthenticated ? '\u2715' : '\u203A'}
-              </Text>
-            </View>
-          </View>
+          onPress={() => (isAuthenticated ? logout() : setShowAuthModal(true))}>
+          <Text style={styles.label}>User</Text>
+          <Text style={styles.value}>
+            {isAuthenticated ? userId || 'Authenticated' : 'Guest'}
+          </Text>
+          <Text style={styles.link}>
+            {isAuthenticated ? 'Tap to logout' : 'Tap to sign in'}
+          </Text>
         </TouchableOpacity>
 
-        {/* Section: Navigation */}
-        <Text style={styles.sectionTitle}>Conversations</Text>
-
+        {/* Navigation */}
         <TouchableOpacity
-          style={[styles.navCard, !canNavigate && styles.navCardDisabled]}
-          onPress={handleNavigateToPreConversation}
-          disabled={!canNavigate}
-          activeOpacity={0.8}>
-          <View style={styles.navCardContent}>
-            <View style={styles.navIconContainer}>
-              <Text style={styles.navIcon}>&#128172;</Text>
-            </View>
-            <View style={styles.navTextContainer}>
-              <Text style={styles.navCardTitle}>Pre-Conversation</Text>
-              <Text style={styles.navCardDescription}>
-                Preview comments and open the full thread
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.navArrow}>&#8250;</Text>
+          style={[styles.button, !sdkReady && styles.disabled]}
+          disabled={!sdkReady}
+          onPress={() =>
+            navigation.navigate('PreConversation', {spotId, postId})
+          }>
+          <Text style={styles.buttonText}>Pre-Conversation</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[
-            styles.navCard,
-            styles.navCardAlt,
-            !canNavigate && styles.navCardDisabled,
+            styles.button,
+            styles.buttonAlt,
+            !sdkReady && styles.disabled,
           ]}
-          onPress={handleNavigateToConversation}
-          disabled={!canNavigate}
-          activeOpacity={0.8}>
-          <View style={styles.navCardContent}>
-            <View style={[styles.navIconContainer, styles.navIconContainerAlt]}>
-              <Text style={styles.navIcon}>&#128488;</Text>
-            </View>
-            <View style={styles.navTextContainer}>
-              <Text style={styles.navCardTitle}>Full Conversation</Text>
-              <Text style={styles.navCardDescription}>
-                Jump directly into the complete discussion
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.navArrow}>&#8250;</Text>
+          disabled={!sdkReady}
+          onPress={() => navigation.navigate('Conversation', {postId})}>
+          <Text style={styles.buttonText}>Full Conversation</Text>
         </TouchableOpacity>
-
-        {!canNavigate && (
-          <View style={styles.hintContainer}>
-            <Text style={styles.hintText}>
-              Configure a valid Spot ID and Post ID to get started
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.bottomSpacer} />
       </ScrollView>
 
-      {/* Auth Modal */}
       <AuthModal />
-
-      {/* Settings Panel */}
-      <SettingsPanel
-        visible={settingsVisible}
-        onClose={() => setSettingsVisible(false)}
-        spotId={spotId}
-        postId={postId}
-        onSpotIdChange={setSpotId}
-        onPostIdChange={setPostId}
-      />
     </View>
   );
 };
-
-const CARD_SHADOW = Platform.select({
-  ios: {
-    shadowColor: Colors.black,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-  },
-  android: {
-    elevation: 3,
-  },
-});
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.surface,
   },
-  scrollView: {
-    flex: 1,
+  content: {
+    padding: 16,
+    gap: 12,
   },
-
-  // Hero
-  hero: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 20,
-    marginBottom: 4,
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: Colors.white,
-    marginBottom: 4,
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.75)',
-  },
-
-  // Sections
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginTop: 20,
-    marginBottom: 8,
-    marginHorizontal: 20,
-  },
-
-  // Card
   card: {
-    marginHorizontal: 16,
-    marginBottom: 4,
-    padding: 16,
     backgroundColor: Colors.background,
-    borderRadius: 14,
-    ...CARD_SHADOW,
+    borderRadius: 12,
+    padding: 16,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: 14,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  badgeReady: {
-    backgroundColor: 'rgba(76, 175, 80, 0.12)',
-  },
-  badgePending: {
-    backgroundColor: 'rgba(255, 152, 0, 0.12)',
-  },
-  badgeText: {
+  label: {
     fontSize: 12,
-    fontWeight: '600',
-  },
-  badgeTextReady: {
-    color: Colors.success,
-  },
-  badgeTextPending: {
-    color: Colors.warning,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  dotReady: {
-    backgroundColor: Colors.success,
-  },
-  dotPending: {
-    backgroundColor: Colors.warning,
-  },
-  errorBanner: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 12,
-  },
-  errorText: {
-    fontSize: 13,
-    color: Colors.error,
-  },
-  configRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.border,
-  },
-  configRowLast: {
-    borderBottomWidth: 0,
-  },
-  configLabel: {
-    fontSize: 14,
     color: Colors.textSecondary,
+    marginTop: 4,
   },
-  configValue: {
-    fontSize: 14,
+  value: {
+    fontSize: 15,
     fontWeight: '600',
     color: Colors.text,
-    maxWidth: '60%',
-    textAlign: 'right',
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    marginBottom: 8,
   },
-
-  // Auth
-  authRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  input: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    padding: 8,
+    backgroundColor: Colors.background,
+  },
+  link: {
+    fontSize: 13,
+    color: Colors.primary,
+  },
+  button: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
   },
-  authLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+  buttonAlt: {
+    backgroundColor: Colors.primaryDark,
   },
-  authAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  authAvatarActive: {
-    backgroundColor: Colors.success,
-  },
-  authAvatarGuest: {
-    backgroundColor: Colors.textMuted,
-  },
-  authAvatarText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: Colors.white,
   },
-  authAvatarIcon: {
-    fontSize: 20,
-  },
-  authInfo: {
-    flex: 1,
-  },
-  authName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  authStatus: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  authChevron: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: Colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  authChevronActive: {
-    backgroundColor: 'rgba(244, 67, 54, 0.1)',
-  },
-  authChevronText: {
-    fontSize: 18,
-    color: Colors.textSecondary,
-    fontWeight: '300',
-  },
-
-  // Navigation Cards
-  navCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginBottom: 10,
-    padding: 16,
-    backgroundColor: Colors.background,
-    borderRadius: 14,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-    ...CARD_SHADOW,
-  },
-  navCardAlt: {
-    borderLeftColor: Colors.primaryDark,
-  },
-  navCardDisabled: {
+  disabled: {
     opacity: 0.4,
-  },
-  navCardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  navIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(74, 144, 226, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
-  },
-  navIconContainerAlt: {
-    backgroundColor: 'rgba(53, 122, 189, 0.1)',
-  },
-  navIcon: {
-    fontSize: 22,
-  },
-  navTextContainer: {
-    flex: 1,
-  },
-  navCardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  navCardDescription: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 3,
-    lineHeight: 17,
-  },
-  navArrow: {
-    fontSize: 24,
-    color: Colors.textMuted,
-    fontWeight: '300',
-    marginLeft: 8,
-  },
-
-  // Hint
-  hintContainer: {
-    marginHorizontal: 20,
-    marginTop: 8,
-  },
-  hintText: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-
-  bottomSpacer: {
-    height: 40,
   },
 });

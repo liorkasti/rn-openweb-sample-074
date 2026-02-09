@@ -2,7 +2,7 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {OWConversationRoute} from 'react-native-openweb-sdk';
 
 export type RootStackParamList = {
-  Home: {_openSettings?: number} | undefined;
+  Home: undefined;
   PreConversation: {spotId: string; postId: string};
   Conversation: {postId: string; route?: OWConversationRoute};
 };

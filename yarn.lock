@@ -8016,11 +8016,11 @@ __metadata:
 
 "react-native-openweb-sdk@file:.yalc/react-native-openweb-sdk::locator=OpenWebRnSample074%40workspace%3A.":
   version: 0.1.0
-  resolution: "react-native-openweb-sdk@file:.yalc/react-native-openweb-sdk#.yalc/react-native-openweb-sdk::hash=d8b57d&locator=OpenWebRnSample074%40workspace%3A."
+  resolution: "react-native-openweb-sdk@file:.yalc/react-native-openweb-sdk#.yalc/react-native-openweb-sdk::hash=35beb4&locator=OpenWebRnSample074%40workspace%3A."
   peerDependencies:
     react: ">=18.2.0"
     react-native: ">=0.74.0"
-  checksum: 670b3d17dcf49a359bcfbf2d4516b88f33b613c7a1544d6672e90e993de9d40fe22bc7690f6b27d0a0b120e2d229d462e5bf2504e49eab7d89e3c70ad3e767a8
+  checksum: dae739a3f5436f3c00c6ff793e2a4ccf80ea9ebe20008eee71be5cafc814c98b6dce24f72911fce9948f6a363f536b5ee41365b9060b14ff8988ae3878dd7b01
   languageName: node
   linkType: hard
 

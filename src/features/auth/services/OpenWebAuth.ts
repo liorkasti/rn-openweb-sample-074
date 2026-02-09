@@ -95,60 +95,23 @@ class AuthService {
 export const authService = new AuthService();
 
 // ── SSO API Configuration ───────────────────────────────────
-// In production, this call should be made from your backend server.
-// For this sample app, we call the OpenWeb API directly.
+// Hardcoded test user for POC. In production, exchange should happen on your backend.
 
 const SSO_API_BASE = 'https://www.spot.im/api/sso/v1/register-user';
 const ACCESS_TOKEN = '03190715DchJcY';
-
-export interface SSOUserCredentials {
-  primaryKey: string;
-  userName: string;
-}
-
-// Default test user credentials
-export const DEFAULT_SSO_USER: SSOUserCredentials = {
+const TEST_USER = {
   primaryKey: 'u_mfs01DpWfsXp',
   userName: 'Test-User',
 };
 
-// All available test users
-export const SSO_TEST_USERS: Array<SSOUserCredentials & {label: string}> = [
-  {label: 'Test-User', primaryKey: 'u_mfs01DpWfsXp', userName: 'Test-User'},
-  {label: 'Liran Nahum', primaryKey: 'u_JVLw4Cl2FqJP', userName: 'liran_n'},
-  {
-    label: 'Mykhailo Nester',
-    primaryKey: 'u_EhJJAQhiYuN1',
-    userName: 'mykhailo_n',
-  },
-  {label: 'Guy Shoham', primaryKey: 'u_pPAWB9sIYt99', userName: 'guy_s'},
-  {label: 'Refael Sommer', primaryKey: 'u_3EvxAJzjHxyV', userName: 'refael_s'},
-  {label: 'Alon Shprung', primaryKey: 'u_DlHL06mEamDM', userName: 'alon_s'},
-  {label: 'Anael Peguine', primaryKey: 'u_K2uWaOcfRZBX', userName: 'anael_p'},
-  {label: 'Alon Haiut', primaryKey: 'u_gApBQQo4EwGh', userName: 'alon_h'},
-  {label: 'Nogah Melamed', primaryKey: 'u_OFwv7yQfeakS', userName: 'nogah_m'},
-];
-
-/**
- * Exchange codeA for codeB via the OpenWeb SSO registration API.
- * @see https://developers.openweb.com/docs/single-sign-on
- *
- * API: GET https://www.spot.im/api/sso/v1/register-user
- *   ?code_a=<codeA>&access_token=<token>&primary_key=<userId>&user_name=<name>
- *
- * Returns codeB as raw text.
- */
-export const exchangeCodeAForCodeB = async (
-  codeA: string,
-  user: SSOUserCredentials = DEFAULT_SSO_USER,
-): Promise<string> => {
+export const exchangeCodeAForCodeB = async (codeA: string): Promise<string> => {
   const url =
     `${SSO_API_BASE}?code_a=${encodeURIComponent(codeA)}` +
     `&access_token=${encodeURIComponent(ACCESS_TOKEN)}` +
-    `&primary_key=${encodeURIComponent(user.primaryKey)}` +
-    `&user_name=${encodeURIComponent(user.userName)}`;
+    `&primary_key=${encodeURIComponent(TEST_USER.primaryKey)}` +
+    `&user_name=${encodeURIComponent(TEST_USER.userName)}`;
 
-  console.log(TAG, '[SSO API] Exchanging codeA for user:', user.userName);
+  console.log(TAG, '[SSO API] Exchanging codeA for:', TEST_USER.userName);
 
   const response = await fetch(url);
 
