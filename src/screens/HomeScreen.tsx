@@ -1,22 +1,22 @@
-import React, {useState, useCallback} from 'react';
+import React, { useCallback, useState } from 'react';
 import {
+  ActivityIndicator,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  ActivityIndicator,
-  Platform,
+  View,
 } from 'react-native';
-import {OpenWeb} from 'react-native-openweb-sdk';
-import {Colors} from '../theme/colors';
-import {DEFAULT_SPOT_ID, DEFAULT_POST_ID} from '../config/constants';
-import {AuthModal} from '../components/AuthModal';
-import {SettingsPanel} from '../components/SettingsPanel';
-import {useAuth} from '../context/AuthContext';
-import {AuthStatus} from '../features/auth/types';
-import type {HomeScreenProps} from '../navigation/types';
+import { OpenWeb } from 'react-native-openweb-sdk';
+import { AuthModal } from '../components/AuthModal';
+import { SettingsPanel } from '../components/SettingsPanel';
+import { DEFAULT_POST_ID, DEFAULT_SPOT_ID } from '../config/constants';
+import { useAuth } from '../context/AuthContext';
+import { AuthStatus } from '../features/auth/types';
+import type { HomeScreenProps } from '../navigation/types';
+import { Colors } from '../theme/colors';
 
 export const HomeScreen = ({
   navigation,

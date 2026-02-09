@@ -13,12 +13,13 @@ import {
   authService,
   exchangeCodeAForCodeB,
 } from '../features/auth/services/OpenWebAuth';
+import type {SSOUserCredentials} from '../features/auth/services/OpenWebAuth';
 
 // ── Public API ─────────────────────────────────────────────
 
 export interface AuthContextValue extends AuthState {
   /** Run the full SSO handshake (startSSO → backend → completeSSO). */
-  authenticate: () => Promise<boolean>;
+  authenticate: (user?: SSOUserCredentials) => Promise<boolean>;
   /** SSO via a third-party provider (Janrain, Gigya, Piano, Auth0…). */
   authenticateWithProvider: (
     provider: OWSSOProvider,
@@ -71,23 +72,30 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({
 
   // ── SSO Handshake ──
 
-  const authenticate = useCallback(async (): Promise<boolean> => {
-    setState(prev => ({...prev, isLoading: true, error: undefined}));
-    try {
-      const codeA = await authService.startSSO();
-      const codeB = await exchangeCodeAForCodeB(codeA);
-      const userId = await authService.completeSSO(codeB);
+  const authenticate = useCallback(
+    async (user?: SSOUserCredentials): Promise<boolean> => {
+      setState(prev => ({...prev, isLoading: true, error: undefined}));
+      try {
+        const codeA = await authService.startSSO();
+        const codeB = await exchangeCodeAForCodeB(codeA, user);
+        const authenticatedUserId = await authService.completeSSO(codeB);
 
-      setState({status: AuthStatus.Authenticated, userId, isLoading: false});
-      completeAuthFlow();
-      return true;
-    } catch (error: any) {
-      const message = error?.message || 'SSO authentication failed';
-      console.error('[AuthContext]', message);
-      setState(prev => ({...prev, isLoading: false, error: message}));
-      return false;
-    }
-  }, [completeAuthFlow]);
+        setState({
+          status: AuthStatus.Authenticated,
+          userId: authenticatedUserId,
+          isLoading: false,
+        });
+        completeAuthFlow();
+        return true;
+      } catch (error: any) {
+        const message = error?.message || 'SSO authentication failed';
+        console.error('[AuthContext]', message);
+        setState(prev => ({...prev, isLoading: false, error: message}));
+        return false;
+      }
+    },
+    [completeAuthFlow],
+  );
 
   // ── Provider SSO ──
 

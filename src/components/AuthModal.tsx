@@ -13,6 +13,7 @@ import {
 import {Colors} from '../theme/colors';
 import {useAuth} from '../context/AuthContext';
 import {AuthStatus} from '../features/auth/types';
+import {SSO_TEST_USERS} from '../features/auth/services/OpenWebAuth';
 
 // ── Supported third-party providers ────────────────────────
 
@@ -40,16 +41,18 @@ export const AuthModal: React.FC = () => {
 
   const [providerToken, setProviderToken] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string>('janrain');
+  const [selectedUserIdx, setSelectedUserIdx] = useState(0);
   const isAuthenticated = status === AuthStatus.Authenticated;
 
   // ── Handlers ──
 
   const handleSSOLogin = useCallback(async () => {
-    const success = await authenticate();
+    const user = SSO_TEST_USERS[selectedUserIdx];
+    const success = await authenticate(user);
     if (success) {
       setShowAuthModal(false);
     }
-  }, [authenticate, setShowAuthModal]);
+  }, [authenticate, setShowAuthModal, selectedUserIdx]);
 
   const handleProviderLogin = useCallback(async () => {
     if (!providerToken.trim()) {
@@ -143,17 +146,45 @@ export const AuthModal: React.FC = () => {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>SSO Handshake</Text>
                 <Text style={styles.sectionHint}>
-                  Starts the codeA/codeB exchange with your backend.
+                  Select a test user, then start the codeA/codeB exchange.
                 </Text>
+
+                {/* User picker chips */}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.userScroll}>
+                  {SSO_TEST_USERS.map((u, i) => (
+                    <TouchableOpacity
+                      key={u.primaryKey}
+                      style={[
+                        styles.providerChip,
+                        selectedUserIdx === i && styles.providerChipActive,
+                      ]}
+                      onPress={() => setSelectedUserIdx(i)}>
+                      <Text
+                        style={[
+                          styles.providerChipText,
+                          selectedUserIdx === i &&
+                            styles.providerChipTextActive,
+                        ]}>
+                        {u.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
                 <TouchableOpacity
-                  style={[styles.button, styles.primaryButton]}
+                  style={[styles.button, styles.primaryButton, {marginTop: 12}]}
                   onPress={handleSSOLogin}
                   disabled={isLoading}
                   activeOpacity={0.8}>
                   {isLoading ? (
                     <ActivityIndicator size="small" color={Colors.white} />
                   ) : (
-                    <Text style={styles.buttonText}>Start SSO</Text>
+                    <Text style={styles.buttonText}>
+                      Login as {SSO_TEST_USERS[selectedUserIdx].label}
+                    </Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -225,9 +256,9 @@ export const AuthModal: React.FC = () => {
           {/* ── Info note ── */}
           <View style={styles.noteCard}>
             <Text style={styles.noteText}>
-              The SSO Handshake uses a mock backend and will fail with the real
-              SDK. Use "SSO with Provider" with a valid JWT for end-to-end
-              testing.
+              SSO Handshake calls the OpenWeb register-user API with the
+              selected test user. Provider SSO requires a valid JWT from an
+              identity provider (Janrain, Gigya, etc.).
             </Text>
           </View>
         </ScrollView>
@@ -398,6 +429,11 @@ const styles = StyleSheet.create({
   },
   providerChipTextActive: {
     color: Colors.white,
+  },
+
+  // User picker scroll
+  userScroll: {
+    marginBottom: 4,
   },
 
   // Token input
